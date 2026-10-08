@@ -85,6 +85,19 @@ mkdir -p "$(dirname "$OUTPUT_ASAR")"
 echo "Packing: $OUTPUT_ASAR"
 npx --yes @electron/asar pack "$EXTRACTED" "$OUTPUT_ASAR"
 
+echo "Comparing ASAR file counts..."
+ORIGINAL_COUNT=$(npx --yes @electron/asar list "$INPUT_ASAR" | wc -l)
+PATCHED_COUNT=$(npx --yes @electron/asar list "$OUTPUT_ASAR" | wc -l)
+echo "Original files: $ORIGINAL_COUNT"
+echo "Patched files:  $PATCHED_COUNT"
+
+if [[ "$ORIGINAL_COUNT" -ne "$PATCHED_COUNT" ]]; then
+    echo "ERROR: ASAR file count changed" >&2
+    exit 1
+fi
+
+echo "ASAR_FILE_COUNT_OK"
+
 echo "PATCH_APPLIED"
 echo "Output: $OUTPUT_ASAR"
 sha256sum "$OUTPUT_ASAR"
