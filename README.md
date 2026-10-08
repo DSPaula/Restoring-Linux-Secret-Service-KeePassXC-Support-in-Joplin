@@ -84,6 +84,7 @@ It does not redistribute Joplin binaries or overwrite the original ASAR.
 Example:
 
 ```bash
+chmod +x patch-joplin-keytar.sh
 ./patch-joplin-keytar.sh /usr/lib/joplin-desktop/app.asar ./app.asar.patched
 ```
 
