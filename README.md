@@ -13,62 +13,62 @@ The following conceptual map summarizes the problem, root cause, patch, resultin
 
 ```mermaid
 mindmap
-  root((Joplin → KeePassXC))
+  root((Joplin to KeePassXC))
     Problem
       KDE Linux uses Electron safeStorage
-      backend: KWallet6
-      log: "Keychain Service Linux backend: kwallet6"
-      log: "Driver unsupported:node-keytar"
-      KWallet contains "Chromium Safe Storage"
-      bundled keytar already exists
-    Root cause (v3.7.21)
+      Backend KWallet6
+      Log says kwallet6
+      Log says node keytar unsupported
+      KWallet contains Chromium Safe Storage
+      Bundled keytar already exists
+    Root cause in v3.7.21
       shim-init-node.ts
-        "Linux returns null for shim.keytar()"
-        node-keytar driver reports unsupported
+        Linux returns null from shim keytar
+        Node keytar driver reports unsupported
       BaseApplication.ts
-        Electron driver registered first
+        Electron driver is registered first
         safeStorage wins when available
       SettingUtils.ts
-        Linux keychain forced read-only without feature flag
+        Linux keychain is read only without feature flag
       Electron driver
-        encrypted blob stays in Joplin KvStore
+        Encrypted blob stays in Joplin KvStore
         OSCrypt key is stored in system keychain
-    Solution: 3 byte-patches
-      main.bundle.js + main-html.bundle.js
-        "1) .keytar:null → .keytar:require('keytar')"
-        "2) disable canUseSafeStorage selection"
-        "3) featureFlag.linuxKeychain !1 → !0"
-      resulting chain
+    Solution with 3 byte patches
+      main.bundle.js and main-html.bundle.js
+        Patch 1 enable bundled keytar on Linux
+        Patch 2 disable safeStorage selection
+        Patch 3 enable Linux keychain feature flag
+      Resulting chain
         Joplin
           KeychainService
-            node-keytar
-              libsecret / D-Bus
+            node keytar
+              libsecret and D-Bus
                 org.freedesktop.secrets
                   KeePassXC
       patch-joplin-keytar.sh
-        extract
-        exact-match validation
-        node --check
-        repack
+        Extract
+        Exact match validation
+        Node syntax check
+        Repack
     Validation
-      electron-safeStorage becomes unsupported
-      keytar set/get test returns mytest
-      no new KWallet entries
+      Electron safeStorage becomes unsupported
+      Keytar set and get returns mytest
+      No new KWallet entries
       KeePassXC receives the keychain entry
     Install and rollback
-      backup original app.asar
-      replace with patched app.asar
-      re-apply after package updates
+      Backup original app.asar
+      Replace with patched app.asar
+      Reapply after package updates
     Testing gotcha
-      custom ASAR test needs build/
-      custom ASAR test needs app.asar.unpacked/
-    Alternative (no patch)
-      --password-store=gnome-libsecret after app path
-      encrypted password remains in Joplin KvStore
+      Custom ASAR test needs build directory
+      Custom ASAR test needs app.asar.unpacked
+    Alternative without patch
+      password store switch after app path
+      Encrypted password remains in Joplin KvStore
     Upstream
-      wire shim.keytar on Linux
-      whitelist --password-store=
-      revisit Linux read-only default
+      Wire shim keytar on Linux
+      Whitelist password store switch
+      Revisit Linux read only default
 ```
 
 ## Problem
