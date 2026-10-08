@@ -11,7 +11,7 @@ Arch Linux · KeePassXC. Byte-exact patch — expect to re-validate on other ver
 
 The following conceptual map summarizes the problem, root cause, patch, resulting keychain chain, validation, and upstream direction. It is intentionally a **conceptual architecture map**, not a runtime trace.
 
-mermaid
+```mermaid
 mindmap
   root((Joplin → KeePassXC))
     Problem
@@ -23,7 +23,7 @@ mindmap
       bundled keytar already exists
     Root cause (v3.7.21)
       shim-init-node.ts
-        Linux returns null for shim.keytar()
+        "Linux returns null for shim.keytar()"
         node-keytar driver reports unsupported
       BaseApplication.ts
         Electron driver registered first
@@ -35,9 +35,9 @@ mindmap
         OSCrypt key is stored in system keychain
     Solution: 3 byte-patches
       main.bundle.js + main-html.bundle.js
-        1) .keytar:null → .keytar:require('keytar')
-        2) disable canUseSafeStorage selection
-        3) featureFlag.linuxKeychain !1 → !0
+        "1) .keytar:null → .keytar:require('keytar')"
+        "2) disable canUseSafeStorage selection"
+        "3) featureFlag.linuxKeychain !1 → !0"
       resulting chain
         Joplin
           KeychainService
@@ -69,6 +69,7 @@ mindmap
       wire shim.keytar on Linux
       whitelist --password-store=
       revisit Linux read-only default
+```
 
 ## Problem
 
