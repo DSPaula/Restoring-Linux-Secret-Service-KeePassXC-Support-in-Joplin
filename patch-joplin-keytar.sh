@@ -25,7 +25,7 @@ EXTRACTED="$WORKDIR/extracted"
 mkdir -p "$EXTRACTED"
 
 echo "Extracting: $INPUT_ASAR"
-npx asar extract "$INPUT_ASAR" "$EXTRACTED"
+npx --yes @electron/asar extract "$INPUT_ASAR" "$EXTRACTED"
 
 python3 - "$EXTRACTED" <<'PY'
 import pathlib
@@ -83,7 +83,7 @@ rm -f "$OUTPUT_ASAR"
 mkdir -p "$(dirname "$OUTPUT_ASAR")"
 
 echo "Packing: $OUTPUT_ASAR"
-npx asar pack "$EXTRACTED" "$OUTPUT_ASAR"
+npx --yes @electron/asar pack "$EXTRACTED" "$OUTPUT_ASAR"
 
 echo "PATCH_APPLIED"
 echo "Output: $OUTPUT_ASAR"
