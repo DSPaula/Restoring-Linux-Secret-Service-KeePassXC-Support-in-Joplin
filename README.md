@@ -11,7 +11,7 @@ Arch Linux · KeePassXC. Byte-exact patch — expect to re-validate on other ver
 
 The following conceptual map summarizes the problem, root cause, patch, resulting keychain chain, validation, and upstream direction. It is intentionally a **conceptual architecture map**, not a runtime trace.
 
-```mermaid
+mermaid
 mindmap
   root((Joplin → KeePassXC))
     Problem
@@ -69,7 +69,6 @@ mindmap
       wire shim.keytar on Linux
       whitelist --password-store=
       revisit Linux read-only default
-```
 
 ## Problem
 
