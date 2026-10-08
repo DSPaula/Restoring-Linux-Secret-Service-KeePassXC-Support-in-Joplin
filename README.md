@@ -7,6 +7,70 @@ path on Linux, so the master password is stored in **KeePassXC** (via
 **Tested on:** Joplin 3.7.21 (AUR `joplin-desktop 3.7.21-1`) · Electron 34.5.8 ·
 Arch Linux · KeePassXC. Byte-exact patch — expect to re-validate on other versions.
 
+## Overview
+
+The following conceptual map summarizes the problem, root cause, patch, resulting keychain chain, validation, and upstream direction. It is intentionally a **conceptual architecture map**, not a runtime trace.
+
+```mermaid
+mindmap
+  root((Joplin → KeePassXC))
+    Problem
+      KDE Linux uses Electron safeStorage
+      backend: KWallet6
+      log: "Keychain Service Linux backend: kwallet6"
+      log: "Driver unsupported:node-keytar"
+      KWallet contains "Chromium Safe Storage"
+      bundled keytar already exists
+    Root cause (v3.7.21)
+      shim-init-node.ts
+        Linux returns null for shim.keytar()
+        node-keytar driver reports unsupported
+      BaseApplication.ts
+        Electron driver registered first
+        safeStorage wins when available
+      SettingUtils.ts
+        Linux keychain forced read-only without feature flag
+      Electron driver
+        encrypted blob stays in Joplin KvStore
+        OSCrypt key is stored in system keychain
+    Solution: 3 byte-patches
+      main.bundle.js + main-html.bundle.js
+        1) .keytar:null → .keytar:require('keytar')
+        2) disable canUseSafeStorage selection
+        3) featureFlag.linuxKeychain !1 → !0
+      resulting chain
+        Joplin
+          KeychainService
+            node-keytar
+              libsecret / D-Bus
+                org.freedesktop.secrets
+                  KeePassXC
+      patch-joplin-keytar.sh
+        extract
+        exact-match validation
+        node --check
+        repack
+    Validation
+      electron-safeStorage becomes unsupported
+      keytar set/get test returns mytest
+      no new KWallet entries
+      KeePassXC receives the keychain entry
+    Install and rollback
+      backup original app.asar
+      replace with patched app.asar
+      re-apply after package updates
+    Testing gotcha
+      custom ASAR test needs build/
+      custom ASAR test needs app.asar.unpacked/
+    Alternative (no patch)
+      --password-store=gnome-libsecret after app path
+      encrypted password remains in Joplin KvStore
+    Upstream
+      wire shim.keytar on Linux
+      whitelist --password-store=
+      revisit Linux read-only default
+```
+
 ## Problem
 
 On Linux, Joplin stores the master password via Electron `safeStorage`, whose backend
